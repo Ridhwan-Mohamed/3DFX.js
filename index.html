@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <title>index</title>
+    <style>
+        html, body { 
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color:  rgb(0, 0, 0);
+        }
+        #canvas2 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 0;
+            margin: 0;
+            width: 900px;
+            height: 600px;
+            z-index: 1;
+            border: 3px solid white;
+            border-radius: 5px
+        }
+        .fileLoader {
+            position: absolute;
+            z-index: 3;
+            top: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <input class="fileLoader" onchange="loadModel(this.files);" type="file" accept=".model">
+    <canvas id="canvas2"></canvas>
+    <!-- Script files below -->
+    <script src="./public/vertex.js"></script>
+    <script src="./public/parser.js"></script>
+    <script src="./public/cosntants.js"></script>
+    <script src="./public/raster.js"></script>
+    <script src="./public/canvas.js"></script>
+    <script src="./public/eventListeners.js"></script>
+</body>
+</html>
