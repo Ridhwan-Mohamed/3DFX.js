@@ -381,7 +381,7 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
                 const vert2 = Vertex.subtract(vertex_arr[triangle_arr[i+1]], vertex_arr[triangle_arr[i+2]])
                 const vert3 = Vertex.subtract(vertex_arr[triangle_arr[i+2]], vertex_arr[triangle_arr[i]])
 
-                const vertL1 = Vertex.vertLighting(vert1,vert3)
+                const vertL1 = Vertex.vertLighting(vert3,vert1)
                 const vertL2 = Vertex.vertLighting(vert1, vert2)
                 const vertL3 = Vertex.vertLighting(vert2, vert3) 
 
@@ -405,7 +405,7 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
 
                 // ctx2.fillStyle = color
                 // ctx2.strokeStyle = color
-                raster3p(screenX, screenY, screenX1, screenY1, screenX2, screenY2, vert1, vert2, vert3)
+                raster3p(screenX, screenY, screenX1, screenY1, screenX2, screenY2, vertL1, vertL2, vertL3)
 
             //     ctx2.beginPath();
     
@@ -440,10 +440,10 @@ function update(){
     // colors.length = 0
     // lights()
     //lighting code
-    // l_yaw += 0.005
-    // if(l_yaw > 2*PI){
-    //     l_yaw - 2*PI
-    // }
+    l_yaw += 0.005
+    if(l_yaw > 2*PI){
+        l_yaw - 2*PI
+    }
 
     // r+=rj
     // g+=gj

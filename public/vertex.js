@@ -1,5 +1,5 @@
 let l_yaw = 0
-let l_pitch = 0
+let l_pitch = -1
 
 function getCameraDirectionVector(pitch, yaw) {
   const cosPitch = Math.cos(pitch);
@@ -111,7 +111,7 @@ class Vertex {
         z: crossProductZ / magnitude
       }
       let dotProduct = normalizedVector.x * camera.x + normalizedVector.y * camera.y + normalizedVector.z * camera.z;
-      return dotProduct > 0? dotProduct.toFixed(2) : 0
+      return dotProduct > 0? Number(dotProduct.toFixed(2)) : 0
     }
 }
   
