@@ -1,5 +1,5 @@
 let l_yaw = 0
-let l_pitch = -1
+let l_pitch = 0
 
 function getCameraDirectionVector(pitch, yaw) {
   const cosPitch = Math.cos(pitch);

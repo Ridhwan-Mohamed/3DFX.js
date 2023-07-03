@@ -2,8 +2,8 @@ let pa = 0
 let pitch = 0
 let x = -300
 let y = 0
-// canvas2.width = 1000
-// canvas2.height = 1000
+canvas2.width = 300
+canvas2.height = 300
 let centerX = canvas2.width / 2;
 let centerY = canvas2.height / 2;
 let height = canvas2.height / 2
@@ -23,7 +23,7 @@ velY = 0,
 speed = 2, // max speed
 friction = 0.4 // friction
 keys = [];
-
+console.log(canvas2.width, canvas2.height)
 function getdistance(x,y,rx,ry){
 
     var a = x - rx;

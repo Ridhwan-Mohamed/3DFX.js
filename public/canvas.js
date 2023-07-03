@@ -1,5 +1,6 @@
 let canvas2 = document.getElementById("canvas2")
 let ctx2    = canvas2.getContext("2d")
+const buffer = new zBuffer(canvas2.height,canvas2.width)
 let data2 = ctx2.getImageData(0,0,canvas2.width,canvas2.height)
 let data = data2.data
 
@@ -82,14 +83,11 @@ function drawDot(){
     ctx2.fillStyle = "white";
     ctx2.beginPath();
     ctx2.arc(centerX, centerY, 1, 0, 2 * Math.PI);
-    //console.log(ctx2.fillStyle)
     ctx2.fill();
     ctx2.closePath()
 }
 
-function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3){
-    //ctx2.fillStyle = 'white';
-
+function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3){
     const threshold = 1e-6;
 
     const alphaA = (-z1) / (z2 - z1);
@@ -97,9 +95,11 @@ function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3){
 
     const fx1 = interpolate(x1, x2, alphaA);
     const fy1 = interpolate(y1, y2, alphaA);
+    const c1  = interpolate(vc1, vc2, alphaA)
 
     const fx2 = interpolate(x1, x3, alphaB);
     const fy2 = interpolate(y1, y3, alphaB);
+    const c2  = interpolate(vc1, vc3, alphaB)
 
     const fz1 = 1
     const fz2 = 1
@@ -128,39 +128,11 @@ function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3){
     let screenX3 = centerX + centerX * projX3;
     let screenY3 = centerY - centerY * projY3;
 
-   // ctx2.save()
-
-   raster3p(screenX, screenY, screenX3, screenY3, screenX2, screenY2)
-
-
-//    ctx2.beginPath()
-
-//     ctx2.moveTo(screenX, screenY);
-//     ctx2.lineTo(screenX3, screenY3);
-//     ctx2.lineTo(screenX2, screenY2);
-
-//     ctx2.closePath();
-    
-    
-//     ctx2.fill();
-
-    raster3p(screenX, screenY, screenX1, screenY1, screenX3, screenY3)
-
-
-    // ctx2.beginPath()
-
-    // ctx2.moveTo(screenX1, screenY1);
-    // ctx2.lineTo(screenX, screenY);
-    // ctx2.lineTo(screenX3, screenY3);
-
-    // ctx2.closePath();
-    // ctx2.fill();
-
+    clipRaster3p(screenX, screenY, screenX3, screenY3, screenX2, screenY2, c1, vc3, vc2, 1, z3, z2)
+    clipRaster3p(screenX, screenY, screenX1, screenY1, screenX3, screenY3, c1, c2, vc3, 1, 1, z3)
 }
 
-function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3,){
-    //ctx2.fillStyle = 'white';
-
+function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3){
     const threshold = 1e-6;
     const alphaA = (-z1) / (z3 - z1);
     const alphaB = (-z2) / (z3 - z2);
@@ -168,9 +140,11 @@ function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3,){
 
     const fx1 = interpolate(x1, x3, alphaA);
     const fy1 = interpolate(y1, y3, alphaA);
+    const c1  = interpolate(vc1, vc3, alphaA)
 
     const fx2 = interpolate(x2, x3, alphaB);
     const fy2 = interpolate(y2, y3, alphaB);
+    const c2  = interpolate(vc2, vc3, alphaB)
 
     const fz1 = 1
     const fz2 = 1
@@ -193,19 +167,7 @@ function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3,){
     let screenX2 = centerX + centerX * projX2;
     let screenY2 = centerY - centerY * projY2;
 
-    raster3p(screenX, screenY, screenX1, screenY1, screenX2, screenY2)
-
-
-    // ctx2.beginPath()
-
-    // ctx2.moveTo(screenX, screenY);
-    // ctx2.lineTo(screenX1, screenY1);
-    // ctx2.lineTo(screenX2, screenY2);
-
-    // ctx2.closePath();
-
-    // ctx2.fill();
-
+    clipRaster3p(screenX, screenY, screenX1, screenY1, screenX2, screenY2, c1, c2, vc3, 1, 1, z3)
 }
 
 
@@ -214,104 +176,75 @@ function interpolate(src, dst, alpha) {
     return src + (dst - src) * alpha ;
 }
 
-function cull(x1, y1, z1, x2, y2, z2, x3, y3, z3) {
+function cull(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3) {
 
-    // // Check if all x points (absolute value) are greater than their corresponding z values (absolute value)
-    // const xCheck = Math.abs(x1) > z1 && Math.abs(x2) > z2 && Math.abs(x3) > z3;
+    // Check if all x points (absolute value) are greater than their corresponding z values (absolute value)
+    const xCheck = Math.abs(x1) > z1 && Math.abs(x2) > z2 && Math.abs(x3) > z3;
   
-    // // Check if all y points (absolute value) are greater than or equal to their corresponding z values (absolute value)
-    // const yCheck = Math.abs(y1) >= z1 && Math.abs(y2) >= z2 && Math.abs(y3) >= z3;
+    // Check if all y points (absolute value) are greater than or equal to their corresponding z values (absolute value)
+    const yCheck = Math.abs(y1) >= z1 && Math.abs(y2) >= z2 && Math.abs(y3) >= z3;
   
     // Check if all z points are negative
     let zCheck = z1 < 0 && z2 < 0 && z3 < 0
 
     if (!zCheck) {
         if (z1 < 0) {
+            const vert1 = Vertex.subtract(v1, v2)
+            const vert2 = Vertex.subtract(v2, v3)
+            const vert3 = Vertex.subtract(v3, v1)
+
+            let vc1 = Vertex.vertLighting(vert3,vert1)
+            let vc2 = Vertex.vertLighting(vert1, vert2)
+            let vc3 = Vertex.vertLighting(vert2, vert3) 
           if (z2 < 0) {
-            clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3)
+            clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3)
       
             return true;
           } else if (z3 < 0) {
-            clip2(x1, y1, z1, x3, y3, z3, x2, y2, z2)
+            clip2(x1, y1, z1, x3, y3, z3, x2, y2, z2, v1, v3, v2, vc1, vc3, vc2)
            
             return true;
           } else {
-            clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3)
+            clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3)
           
             return true;
           }
         } else if (z2 < 0) {
+            const vert1 = Vertex.subtract(v1, v2)
+            const vert2 = Vertex.subtract(v2, v3)
+            const vert3 = Vertex.subtract(v3, v1)
+
+            let vc1 = Vertex.vertLighting(vert3,vert1)
+            let vc2 = Vertex.vertLighting(vert1, vert2)
+            let vc3 = Vertex.vertLighting(vert2, vert3) 
           if (z3 < 1) {
-            clip2(x3, y3, z3, x2, y2, z2, x1, y1, z1)
+            clip2(x3, y3, z3, x2, y2, z2, x1, y1, z1, v3, v2, v1, vc3, vc2, vc1)
       
             return true;
           } else {
-            clip1(x2, y2, z2, x1, y1, z1, x3, y3, z3)
+            clip1(x2, y2, z2, x1, y1, z1, x3, y3, z3, v2, v1, v3, vc2, vc1, vc3)
             
             return true;
           }
         } else if (z3 < 0) {
-          clip1(x3, y3, z3, x1, y1, z1, x2, y2, z2)
+            const vert1 = Vertex.subtract(v1, v2)
+            const vert2 = Vertex.subtract(v2, v3)
+            const vert3 = Vertex.subtract(v3, v1)
+
+            let vc1 = Vertex.vertLighting(vert3,vert1)
+            let vc2 = Vertex.vertLighting(vert1, vert2)
+            let vc3 = Vertex.vertLighting(vert2, vert3) 
+          clip1(x3, y3, z3, x1, y1, z1, x2, y2, z2, v3, v1, v2, vc3, vc1, vc2)
 
           return true;
         }
     }
       
-      
-   
     // Return true if any of the conditions is true, indicating that the triangle should be culled
-    return zCheck;
+    return zCheck || yCheck || xCheck;
 }
 
-// function backfaceCull(vertex_arr, tri_arr){
-//     let cullFlags = [];
-//     let angle = -pa
-
-//     for (let i = 0; i < tri_arr.length; i += 3) {
-//     let px = vertex_arr[tri_arr[i]].getX() - y
-//     let pz = vertex_arr[tri_arr[i]].getZ() - x
-//     let transx = px*Math.cos(angle) + (pz + 0.0001)*Math.sin(angle)
-//     let transy = vertex_arr[tri_arr[i]].getY() - fov 
-//     let transz = px*(-Math.sin(angle)) + (pz + 0.0001)*Math.cos(angle) 
-//     transy = transy * Math.cos(pitch) - transz * Math.sin(pitch)
-//     transz = transy * Math.sin(pitch) + transz * Math.cos(pitch)
-
-//     let vert1 = new Vertex(transx,transy,transz)
-
-//     px = vertex_arr[tri_arr[i+1]].getX() - y
-//     pz = vertex_arr[tri_arr[i+1]].getZ() - x
-//     transx = px*Math.cos(angle) + (pz + 0.0001)*Math.sin(angle)
-//     transy = vertex_arr[tri_arr[i+1]].getY() - fov 
-//     transz = px*(-Math.sin(angle)) + (pz + 0.0001)*Math.cos(angle) 
-//     transy = transy * Math.cos(pitch) - transz * Math.sin(pitch)
-//     transz = transy * Math.sin(pitch) + transz * Math.cos(pitch)
-
-//     let vert2 = new Vertex(transx,transy,transz)
-   
-//     px = vertex_arr[tri_arr[i+2]].getX() - y
-//     pz = vertex_arr[tri_arr[i+2]].getZ() - x
-//     transx = px*Math.cos(angle) + (pz + 0.0001)*Math.sin(angle)
-//     transy = vertex_arr[tri_arr[i+2]].getY() - fov 
-//     transz = px*(-Math.sin(angle)) + (pz + 0.0001)*Math.cos(angle) 
-//     transy = transy * Math.cos(pitch) - transz * Math.sin(pitch)
-//     transz = transy * Math.sin(pitch) + transz * Math.cos(pitch)
-
-//     let vert3 = new Vertex(transx,transy,transz)
-
-//     let vec1 = Vertex.subtract(vert1, vert2);
-//     let vec2 = Vertex.subtract(vert1, vert3);
-//     let bool = Vertex.crossProduct(vec1, vec2, vert1);
-//     cullFlags.push(bool);
-//     }
-
-//     return cullFlags
-// }
-
 let drawTriangle = (vertex_arr, triangle_arr) => {
-    //ctx2.save()
-    //ctx2.fillStyle = 'white'
-    //ctx2.strokeStyle = 'red'
-
     let angle = -pa;
     let centerX = canvas2.width / 2;
     let centerY = canvas2.height / 2;
@@ -321,10 +254,6 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
     let draw = 0
     let drawBool = true
 
-    // for(let j = 0; j < triangle_arr.length ; j+=3){
-    //     //ctx2.strokeStyle = color
-
-
     for (let i = 0; i < tri_arr.length; i += 3) {
         drawBool = true
 
@@ -332,13 +261,18 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         let px1, pz1, transx1, transz1, transy1
         let px2, pz2, transx2, transz2, transy2
 
-        px = vertex_arr[triangle_arr[i]].getX() - y
-        pz = vertex_arr[triangle_arr[i]].getZ() - x
-        transx = px*Math.cos(angle) + (pz + 0.0001)*Math.sin(angle)
-        transy = vertex_arr[triangle_arr[i]].getY() - fov 
-        transz = px*(-Math.sin(angle)) + (pz + 0.0001)*Math.cos(angle) 
-        transy = transy * Math.cos(pitch) - transz * Math.sin(pitch)
-        transz = transy * Math.sin(pitch) + transz * Math.cos(pitch)
+        px = vertex_arr[triangle_arr[i]].getX() - y;
+        pz = vertex_arr[triangle_arr[i]].getZ() - x;
+        transx = px*Math.cos(angle) + (pz + 0.0001)*Math.sin(angle);
+        transy = vertex_arr[triangle_arr[i]].getY() - fov;
+        transz = px*(-Math.sin(angle)) + (pz + 0.0001)*Math.cos(angle); 
+
+        // Store the original transy value before updating it
+        let temp_transy = transy;
+
+        transy = temp_transy * Math.cos(pitch) - transz * Math.sin(pitch);
+        transz = temp_transy * Math.sin(pitch) + transz * Math.cos(pitch);
+
 
         let vert1 = new Vertex(transx,transy,transz)
 
@@ -347,8 +281,12 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         transx1 = px1 * Math.cos(angle) + (pz1 + 0.0001) * Math.sin(angle);
         transy1 = vertex_arr[triangle_arr[i+1]].getY() - fov;
         transz1 = px1 * (-Math.sin(angle)) + (pz1 + 0.0001) * Math.cos(angle);
-        transy1 = transy1 * Math.cos(pitch) - transz1 * Math.sin(pitch);
-        transz1 = transy1 * Math.sin(pitch) + transz1 * Math.cos(pitch);        
+        
+        // Store the original transy1 value before updating it
+        let temp_transy1 = transy1;
+        
+        transy1 = temp_transy1 * Math.cos(pitch) - transz1 * Math.sin(pitch);
+        transz1 = temp_transy1 * Math.sin(pitch) + transz1 * Math.cos(pitch);
 
         let vert2 = new Vertex(transx1,transy1,transz1)
 
@@ -357,8 +295,12 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         transx2 = px2 * Math.cos(angle) + (pz2 + 0.0001) * Math.sin(angle);
         transy2 = vertex_arr[triangle_arr[i+2]].getY() - fov;
         transz2 = px2 * (-Math.sin(angle)) + (pz2 + 0.0001) * Math.cos(angle);
-        transy2 = transy2 * Math.cos(pitch) - transz2 * Math.sin(pitch);
-        transz2 = transy2 * Math.sin(pitch) + transz2 * Math.cos(pitch);
+        
+        // Store the original transy2 value before updating it
+        let temp_transy2 = transy2;
+        
+        transy2 = temp_transy2 * Math.cos(pitch) - transz2 * Math.sin(pitch);
+        transz2 = temp_transy2 * Math.sin(pitch) + transz2 * Math.cos(pitch);
 
         let vert3 = new Vertex(transx2,transy2,transz2)
 
@@ -368,22 +310,14 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         
         //console.log(triangle_arr[j],triangle_arr[j+1],triangle_arr[j+2])
         if(backfaceCull){
-            // ctx2.fillStyle = 'white'//rgba(150,50,10,' + (colors[count]) + ')';
-            // ctx2.strokeStyle = ctx2.fillStyle;
 
-            let bool = cull(transx,transy,transz,transx1,transy1,transz1,transx2,transy2,transz2)
+            let bool = cull(transx,transy,transz,transx1,transy1,transz1,transx2,transy2,transz2, vertex_arr[triangle_arr[i]], vertex_arr[triangle_arr[i+1]], vertex_arr[triangle_arr[i+2]])
             if(bool == true){
                 drawBool = false
             }
 
             if(drawBool){
-                const vert1 = Vertex.subtract(vertex_arr[triangle_arr[i]], vertex_arr[triangle_arr[i+1]])
-                const vert2 = Vertex.subtract(vertex_arr[triangle_arr[i+1]], vertex_arr[triangle_arr[i+2]])
-                const vert3 = Vertex.subtract(vertex_arr[triangle_arr[i+2]], vertex_arr[triangle_arr[i]])
-
-                const vertL1 = Vertex.vertLighting(vert3,vert1)
-                const vertL2 = Vertex.vertLighting(vert1, vert2)
-                const vertL3 = Vertex.vertLighting(vert2, vert3) 
+                
 
                 let projX = transx / transz;
                 let projY = transy / transz;
@@ -403,80 +337,29 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
                 let screenX2 = centerX + centerX * projX2;
                 let screenY2 = centerY - centerY * projY2;
 
-                // ctx2.fillStyle = color
-                // ctx2.strokeStyle = color
-                raster3p(screenX, screenY, screenX1, screenY1, screenX2, screenY2, vertL1, vertL2, vertL3)
-
-            //     ctx2.beginPath();
-    
-            //     ctx2.moveTo(screenX, screenY);
-            //     ctx2.lineTo(screenX1, screenY1);
-            //     ctx2.lineTo(screenX2, screenY2);
-            
-            //     ctx2.closePath();
-    
-    
-            //     ctx2.fill();
-    
+                raster3p(screenX, screenY, screenX1, screenY1, screenX2, screenY2, vertex_arr[triangle_arr[i]], vertex_arr[triangle_arr[i+1]], vertex_arr[triangle_arr[i+2]], transz, transz1, transz2)
             }
         }
         count++
     }
 };
 
-function lights(){
-    console.log("camera... ACTION")
-    for(let i = 0; i < tri_arr.length; i+=3){
-        let vec1 = Vertex.subtract(vertex_arr[tri_arr[i]], vertex_arr[tri_arr[i+1]]);
-        let vec2 = Vertex.subtract(vertex_arr[tri_arr[i]], vertex_arr[tri_arr[i+2]]);
-        Vertex.lighting(vec1, vec2, vertex_arr[tri_arr[i+2]]);
-    }
-}
 
 //game loop
 function update(){
     window.requestAnimationFrame(update)
     clearScreen2()
-    // colors.length = 0
-    // lights()
     //lighting code
     l_yaw += 0.005
     if(l_yaw > 2*PI){
         l_yaw - 2*PI
     }
 
-    // r+=rj
-    // g+=gj
-    // b+=bj
-    // if(r > 255){
-    //     rj *= -1
-    // }
-    // else if(r < 100){
-    //     rj = 0.5
-    // }
-    // if(g > 255){
-    //     gj *= -1
-    // }
-    // else if(g < 50){
-    //     gj = 0.25
-    // }
-    // if(b > 255){
-    //     bj *= -1
-    // }
-    // else if(b < 0){
-    //     bj = 0.1
-    // }
-
-    //lights();
     drawTriangle(vertex_arr, tri_arr)
     data2.data = data
     ctx2.putImageData(data2,0,0)
     data.fill(0)
-    //drawDot()
+    buffer.buffer.fill(Number.MAX_VALUE)
+    drawDot()
     move()
 }
-
-
-
-//update()
-//document.addEventListener('keydown' , (e) => {move()})
