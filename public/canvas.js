@@ -87,7 +87,7 @@ function drawDot(){
     ctx2.closePath()
 }
 
-function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3){
+function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, vc1, vc2, vc3){
     const threshold = 1e-6;
 
     const alphaA = (-z1) / (z2 - z1);
@@ -132,7 +132,7 @@ function clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3){
     clipRaster3p(screenX, screenY, screenX1, screenY1, screenX3, screenY3, c1, c2, vc3, 1, 1, z3)
 }
 
-function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3){
+function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, vc1, vc2, vc3){
     const threshold = 1e-6;
     const alphaA = (-z1) / (z3 - z1);
     const alphaB = (-z2) / (z3 - z2);
@@ -173,16 +173,16 @@ function clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3){
 
 
 function interpolate(src, dst, alpha) {
-    return src + (dst - src) * alpha ;
+    return (1-alpha)*src + dst * alpha ;
 }
 
 function cull(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3) {
 
     // Check if all x points (absolute value) are greater than their corresponding z values (absolute value)
-    const xCheck = Math.abs(x1) > z1 && Math.abs(x2) > z2 && Math.abs(x3) > z3;
+    const xCheck = ((x1 > z1 && x2 > z2 && x3 > z3) || (x1 < -z1 && x2 < -z2 && x3 < -z3));
   
     // Check if all y points (absolute value) are greater than or equal to their corresponding z values (absolute value)
-    const yCheck = Math.abs(y1) >= z1 && Math.abs(y2) >= z2 && Math.abs(y3) >= z3;
+    const yCheck = ((y1 > z1 && y2 > z2 && y3 > z3) || (y1 < -z1 && y2 < -z2 && y3 < -z3));
   
     // Check if all z points are negative
     let zCheck = z1 < 0 && z2 < 0 && z3 < 0
@@ -197,15 +197,15 @@ function cull(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3) {
             let vc2 = Vertex.vertLighting(vert1, vert2)
             let vc3 = Vertex.vertLighting(vert2, vert3) 
           if (z2 < 0) {
-            clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3)
+            clip2(x1, y1, z1, x2, y2, z2, x3, y3, z3, vc1, vc2, vc3)
       
             return true;
           } else if (z3 < 0) {
-            clip2(x1, y1, z1, x3, y3, z3, x2, y2, z2, v1, v3, v2, vc1, vc3, vc2)
+            clip2(x1, y1, z1, x3, y3, z3, x2, y2, z2, vc1, vc3, vc2)
            
             return true;
           } else {
-            clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3, vc1, vc2, vc3)
+            clip1(x1, y1, z1, x2, y2, z2, x3, y3, z3, vc1, vc2, vc3)
           
             return true;
           }
@@ -218,11 +218,11 @@ function cull(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3) {
             let vc2 = Vertex.vertLighting(vert1, vert2)
             let vc3 = Vertex.vertLighting(vert2, vert3) 
           if (z3 < 1) {
-            clip2(x3, y3, z3, x2, y2, z2, x1, y1, z1, v3, v2, v1, vc3, vc2, vc1)
+            clip2(x3, y3, z3, x2, y2, z2, x1, y1, z1, vc3, vc2, vc1)
       
             return true;
           } else {
-            clip1(x2, y2, z2, x1, y1, z1, x3, y3, z3, v2, v1, v3, vc2, vc1, vc3)
+            clip1(x2, y2, z2, x1, y1, z1, x3, y3, z3, vc2, vc1, vc3)
             
             return true;
           }
@@ -234,25 +234,23 @@ function cull(x1, y1, z1, x2, y2, z2, x3, y3, z3, v1, v2, v3) {
             let vc1 = Vertex.vertLighting(vert3,vert1)
             let vc2 = Vertex.vertLighting(vert1, vert2)
             let vc3 = Vertex.vertLighting(vert2, vert3) 
-          clip1(x3, y3, z3, x1, y1, z1, x2, y2, z2, v3, v1, v2, vc3, vc1, vc2)
+          clip1(x3, y3, z3, x1, y1, z1, x2, y2, z2, vc3, vc1, vc2)
 
           return true;
         }
     }
       
     // Return true if any of the conditions is true, indicating that the triangle should be culled
-    return zCheck || yCheck || xCheck;
+    return zCheck || xCheck || yCheck 
 }
 
 let drawTriangle = (vertex_arr, triangle_arr) => {
     let angle = -pa;
     let centerX = canvas2.width / 2;
     let centerY = canvas2.height / 2;
-    let cx = y
-    let cz = x
     let count = 0
-    let draw = 0
     let drawBool = true
+    // console.log("start")
 
     for (let i = 0; i < tri_arr.length; i += 3) {
         drawBool = true
@@ -260,6 +258,7 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         let px, pz, transx, transz, transy
         let px1, pz1, transx1, transz1, transy1
         let px2, pz2, transx2, transz2, transy2
+
 
         px = vertex_arr[triangle_arr[i]].getX() - y;
         pz = vertex_arr[triangle_arr[i]].getZ() - x;
@@ -273,7 +272,6 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         transy = temp_transy * Math.cos(pitch) - transz * Math.sin(pitch);
         transz = temp_transy * Math.sin(pitch) + transz * Math.cos(pitch);
 
-
         let vert1 = new Vertex(transx,transy,transz)
 
         px1 = vertex_arr[triangle_arr[i+1]].getX() - y;
@@ -284,7 +282,8 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         
         // Store the original transy1 value before updating it
         let temp_transy1 = transy1;
-        
+
+
         transy1 = temp_transy1 * Math.cos(pitch) - transz1 * Math.sin(pitch);
         transz1 = temp_transy1 * Math.sin(pitch) + transz1 * Math.cos(pitch);
 
@@ -301,7 +300,7 @@ let drawTriangle = (vertex_arr, triangle_arr) => {
         
         transy2 = temp_transy2 * Math.cos(pitch) - transz2 * Math.sin(pitch);
         transz2 = temp_transy2 * Math.sin(pitch) + transz2 * Math.cos(pitch);
-
+        //console.log(transx, transy, transz, transx1, transy1, transz1, transx2, transy2, transz2)
         let vert3 = new Vertex(transx2,transy2,transz2)
 
         let vec1 = Vertex.subtract(vert1, vert2);
@@ -359,7 +358,7 @@ function update(){
     data2.data = data
     ctx2.putImageData(data2,0,0)
     data.fill(0)
-    buffer.buffer.fill(Number.MAX_VALUE)
+    buffer.buffer.fill(Number.MIN_VALUE)
     drawDot()
     move()
 }
