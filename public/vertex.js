@@ -21,11 +21,33 @@ function getCameraDirectionVector(pitch, yaw) {
   };
 }
 
+function interpolateTo(u, v, du, dv, z, dz, alpha){
+  // Interpolate 1/z, u/z, and v/z
+  let invZ = 1/z;
+  let invDz = 1/dz;
+  let uz = u * invZ;
+  let vz = v * invZ;
+  let duz = du * invDz;
+  let dvz = dv * invDz;
+  
+  // Linearly interpolate 1/z, u/z, and v/z
+  let intInvZ = interpolate(invZ, invDz, alpha);
+  let intUz = interpolate(uz, duz, alpha);
+  let intVz = interpolate(vz, dvz, alpha);
+
+  // Compute the perspective-correct u and v
+  let intU = intUz / intInvZ;
+  let intV = intVz / intInvZ;
+
+  return [intU, intV];
+}
+
 class Vertex {
-    constructor(x, y, z) {
-      this.x = x;
-      this.y = y;
-      this.z = z;
+    constructor(x, y, z, textureInd) {
+      this.x    = x;
+      this.y    = y;
+      this.z    = z;
+      this.pathRef  = textureInd;
     }
 
     applyTransform(matrix) {
@@ -52,6 +74,32 @@ class Vertex {
       this.z *= 1000;
     }
 
+    interpolateTo(du, dv, z, dz, alpha){
+      // Get the current values of u, v, and z
+      let u = this.u;
+      let v = this.v;
+    
+      // Interpolate 1/z, u/z, and v/z
+      let invZ = 1/z;
+      let invDz = 1/dz;
+      let uz = u * invZ;
+      let vz = v * invZ;
+      let duz = du * invDz;
+      let dvz = dv * invDz;
+      
+      // Linearly interpolate 1/z, u/z, and v/z
+      let intInvZ = interpolate(invZ, invDz, alpha);
+      let intUz = interpolate(uz, duz, alpha);
+      let intVz = interpolate(vz, dvz, alpha);
+    
+      // Compute the perspective-correct u and v
+      let intU = intUz / intInvZ;
+      let intV = intVz / intInvZ;
+    
+      return [intU, intV];
+    }
+    
+
     getX() {
       return this.x;
     }
@@ -62,6 +110,18 @@ class Vertex {
 
     getZ() {
       return this.z;
+    }
+
+    getU() {
+      return this.u
+    }
+
+    getV() {
+      return this.v
+    }
+
+    getPath() {
+      return this.pathRef
     }
 
     static subtract(vertex1, vertex2) {
@@ -134,6 +194,7 @@ class Vertex {
         z: crossProductZ / magnitude
       }
       let dotProduct = normalizedVector.x * camera.x + normalizedVector.y * camera.y + normalizedVector.z * camera.z;
-      return dotProduct > 0.2? Number(dotProduct.toFixed(2)) : 0.2
+      return dotProduct > 0? Number(dotProduct.toFixed(2)) : 0
     }
 }
+

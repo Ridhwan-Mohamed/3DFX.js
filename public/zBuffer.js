@@ -25,7 +25,7 @@ class zBuffer {
         return (cTri/total)*vc3 + (bTri/total)*vc2 + (aTri/total)*vc1
     }
 
-    emptySpot(x, y, z) {
+     emptySpot(x, y, z) {
         if (z > this.buffer[y * this.width + x]) {
             this.buffer[y * this.width + x] = z;
             return true;
