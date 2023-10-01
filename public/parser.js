@@ -37,7 +37,7 @@ async function buildModel(xmlDoc) {
     let texCoords = texCoord[i].getElementsByTagName('m:tex2coord');
     for (let j = 0; j < texCoords.length; j++) {
       let u = parseFloat(texCoords[j].getAttribute('u'));
-      let v = parseFloat(texCoords[j].getAttribute('v'));
+      let v = 1 - parseFloat(texCoords[j].getAttribute('v'));
       texInd_arr.push(u, v);
     }
   }

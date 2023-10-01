@@ -66,7 +66,7 @@ function clipRaster3p(ax, ay, bx, by, cx, cy, vc1, vc2, vc3, z1, z2, z3, au, av,
 			if( bx < ax ) [ax, ay, bx, by, vc1, vc2, z1, z2, au, av, bu, bv] = [bx, by, ax, ay, vc2, vc1, z2, z1, bu, bv, au, av]
 			DrawFlatTopTriangle(ax, ay, bx, by, cx, cy, vc1, vc2, vc3, z1, z2, z3, au, av, bu, bv, cu, cv, path);
 		}
-    else if( by == cy ) // natural flat bottom
+    else if( by == cy ) // natural flat bottom 
         {
             // sorting bottom vertices by x
             if( cx < bx ) [cx, cy, bx, by, vc3, vc2, z3, z2, cu, cv, bu, bv] = [bx, by, cx, cy, vc2, vc3, z2, z3, bu, bv, cu, cv]
@@ -129,15 +129,9 @@ function DrawFlatTopTriangle(ax, ay, bx, by, cx, cy, vc1, vc2, vc3, z1, z2, z3, 
         let texZInv = lZInv + scanStepZInv * (xBegin + 0.5 - px0)
 
         for(let x = xBegin; x < xEnd; x++, texUz += scanStepU, texVz += scanStepV, texZInv += scanStepZInv){
-            // let depth = zBuffer.calculateDepth(ax,ay,bx,by,cx,cy,x,y,z1,z2,z3)
             if(buffer.emptySpot(x, y, texZInv)){
-                // if(depth != texZInv){continue}
                 let texU = texUz / texZInv
                 let texV = texVz / texZInv
-
-                // Clamp UV coordinates to valid range
-                // texU = Math.max(0, Math.min(1, texU))
-                // texV = Math.max(0, Math.min(1, texV))
 
                 let xCol = Math.floor(texU * clampX)
                 let yCol = Math.floor(texV * clampY)
@@ -190,16 +184,9 @@ function DrawFlatBottomTriangle(ax, ay, bx, by, cx, cy, vc1, vc2, vc3, z1, z2, z
         let texZInv = lZInv + scanStepZInv * (xBegin + 0.5 - px0)
 
         for(let x = xBegin; x < xEnd; x++, texUz += scanStepU, texVz += scanStepV, texZInv += scanStepZInv){
-            // let depth = zBuffer.calculateDepth(ax,ay,bx,by,cx,cy,x,y,z1,z2,z3)
             if(buffer.emptySpot(x, y, texZInv)){
-                // if(depth != texZInv){continue}
                 let texU = texUz / texZInv
                 let texV = texVz / texZInv
-
-                // Clamp UV coordinates to valid range
-                // texU = Math.max(0, Math.min(1, texU))
-                // texV = Math.max(0, Math.min(1, texV))
-
                 let xCol = Math.floor(texU * clampX)
                 let yCol = Math.floor(texV * clampY)
                 let texCol = 4*(yCol*clampX+xCol)

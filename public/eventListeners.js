@@ -21,24 +21,6 @@ canvas2.addEventListener("click", async () => {
     }
   }
 
-  // function updatePosition(e) {
-  //   pa += e.movementX*0.001;
-  //   pitch -= e.movementY*0.002
-  //   height -= e.movementY; //bound this l8r please
-  //   if(pa < 0){
-  //       pa += 2*PI
-  //   }
-  //   else if(pitch > 2*PI){
-  //       pitch -= 2*PI
-  //   }
-  //   if(pitch < 0){
-  //     pitch += 2*PI
-  //   }
-  //   else if(pa > 2*PI){
-  //       pa -= 2*PI
-  //   }
-  // }
-
   function updatePosition(e) {
     pa += e.movementX*0.001;
     pitch -= e.movementY*0.002;
