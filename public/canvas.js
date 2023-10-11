@@ -19,22 +19,22 @@ function move(e){
     // check the keys and do the movement.
     if (keys[83]) {
         if (velA > -speed) {
-            velA-=0.3;
+            velA-=0.4;
         }
     }
     if (keys[87]) {
         if (velA < speed) {
-            velA+=0.3;
+            velA+=0.4;
         }
     }
     if (keys[65]) {
         if (velY < speed) {
-            velY+=0.3;
+            velY+=0.4;
         }
     }
     if (keys[68]) {
         if (velY > -speed) {
-            velY-=0.3;
+            velY-=0.4;
         }
     }
     if (keys[32]){

@@ -62,8 +62,8 @@ class Vertex {
 			xrv[2] = transformedY * Math.sin(-PI/2) + transformedZ * Math.cos(-PI/2);
 			
 			var yrv = [0, xrv[1], 0];
-			yrv[0] = xrv[0] * Math.cos(0) + xrv[2] * Math.sin(0);  //y rotation
-			yrv[2] = xrv[0] * -Math.sin(0) + xrv[2] * Math.cos(0);
+			yrv[0] = xrv[0] * Math.cos(PI) + xrv[2] * Math.sin(PI);  //y rotation
+			yrv[2] = xrv[0] * -Math.sin(PI) + xrv[2] * Math.cos(PI);
 			
 			this.x = yrv[0] * Math.cos(0) + yrv[1] * -Math.sin(0); //z rotation
 			this.y = yrv[0] * Math.sin(0) + yrv[1] * Math.cos(0);

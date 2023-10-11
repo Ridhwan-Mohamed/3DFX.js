@@ -37,7 +37,6 @@ function raster3p(ax, ay, bx, by, cx, cy, v1, v2, v3, z1, z2, z3, au, av, bu, bv
     else{ //regular triangle
         const alphaSplit = (by - ay) / (cy - ay)
         let int_x = ax + (cx - ax) * alphaSplit
-        //const colorSplit =  getdistance(int_x,by,ax,ay) / getdistance(cx,cy,ax,ay)
         let int_color = interpolate(vc1, vc3, alphaSplit)
         let [intU, intV] = v1.interpolateTo(v3.getU(), v3.getV(), z1, z3, alphaSplit)
         let int_z     = 1/interpolate(1/z1, 1/z3, alphaSplit)
@@ -128,20 +127,7 @@ function DrawFlatTopTriangle(ax, ay, bx, by, cx, cy, vc1, vc2, vc3, z1, z2, z3, 
         let texVz = lVz + scanStepV * (xBegin + 0.5 - px0)
         let texZInv = lZInv + scanStepZInv * (xBegin + 0.5 - px0)
 
-        for(let x = xBegin; x < xEnd; x++, texUz += scanStepU, texVz += scanStepV, texZInv += scanStepZInv){
-            if(buffer.emptySpot(x, y, texZInv)){
-                let texU = texUz / texZInv
-                let texV = texVz / texZInv
-
-                let xCol = Math.floor(texU * clampX)
-                let yCol = Math.floor(texV * clampY)
-                let texCol = 4*(yCol*clampX+xCol)
-                data[4*(y*canvas2.width+x)]   = textures[path][texCol]
-                data[4*(y*canvas2.width+x)+1] = textures[path][texCol+1]
-                data[4*(y*canvas2.width+x)+2] = textures[path][texCol+2]
-                data[4*(y*canvas2.width+x)+3] = textures[path][texCol+3]
-            }
-        }
+        rasterTri(xBegin, xEnd, texUz, scanStepU, texVz ,scanStepV, texZInv, scanStepZInv, clampX, clampY, path, y)
     }
 }
 
@@ -183,18 +169,22 @@ function DrawFlatBottomTriangle(ax, ay, bx, by, cx, cy, vc1, vc2, vc3, z1, z2, z
         let texVz = lVz + scanStepV * (xBegin + 0.5 - px0)
         let texZInv = lZInv + scanStepZInv * (xBegin + 0.5 - px0)
 
-        for(let x = xBegin; x < xEnd; x++, texUz += scanStepU, texVz += scanStepV, texZInv += scanStepZInv){
-            if(buffer.emptySpot(x, y, texZInv)){
-                let texU = texUz / texZInv
-                let texV = texVz / texZInv
-                let xCol = Math.floor(texU * clampX)
-                let yCol = Math.floor(texV * clampY)
-                let texCol = 4*(yCol*clampX+xCol)
-                data[4*(y*canvas2.width+x)]   = textures[path][texCol]
-                data[4*(y*canvas2.width+x)+1] = textures[path][texCol+1]
-                data[4*(y*canvas2.width+x)+2] = textures[path][texCol+2]
-                data[4*(y*canvas2.width+x)+3] = textures[path][texCol+3]
-            }
+        rasterTri(xBegin, xEnd, texUz, scanStepU, texVz ,scanStepV, texZInv, scanStepZInv, clampX, clampY, path, y)
+    }
+}
+
+function rasterTri(xBegin, xEnd, texUz, scanStepU, texVz ,scanStepV, texZInv, scanStepZInv, clampX, clampY, path, y){
+    for(let x = xBegin; x < xEnd; x++, texUz += scanStepU, texVz += scanStepV, texZInv += scanStepZInv){
+        if(buffer.emptySpot(x, y, texZInv)){
+            let texU = texUz / texZInv
+            let texV = texVz / texZInv
+            let xCol = Math.floor(texU * clampX)
+            let yCol = Math.floor(texV * clampY)
+            let texCol = 4*(yCol*clampX+xCol)
+            data[4*(y*canvas2.width+x)]   = textures[path][texCol]
+            data[4*(y*canvas2.width+x)+1] = textures[path][texCol+1]
+            data[4*(y*canvas2.width+x)+2] = textures[path][texCol+2]
+            data[4*(y*canvas2.width+x)+3] = textures[path][texCol+3]
         }
     }
 }

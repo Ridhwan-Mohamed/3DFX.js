@@ -1,9 +1,9 @@
 let pa = 0
 let pitch = 0
-let x = -200
+let x = -1000
 let y = 0
-canvas2.width = 300
-canvas2.height = 300
+canvas2.width = 600
+canvas2.height = 600
 let centerX = canvas2.width / 2;
 let centerY = canvas2.height / 2;
 let height = canvas2.height / 2

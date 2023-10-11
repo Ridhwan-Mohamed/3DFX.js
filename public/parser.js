@@ -6,20 +6,36 @@ let colors     = []
 let textures   = []
 let texSize    = []  
 
-async function loadModel(files) {
+function loadModel(fileContents) {
+  vertex_arr = []
+  texInd_arr = []
+  tri_arr    = []
+  uv_arr     = []
+  colors     = []
+  textures   = []
+  texSize    = []  
+  console.log(fileContents);
   vertex_arr.length = 0;
   tri_arr.length = 0;
   colors.length = 0;
-  var reader = new FileReader();
 
-  reader.onload = function(e) {
-    var fileContents = e.target.result;
-    var parser = new DOMParser();
-    var xmlDoc = parser.parseFromString(fileContents, "application/xml");
-    buildModel(xmlDoc);
-  }
-  reader.readAsText(files[0]);
+  var parser = new DOMParser();
+  var xmlDoc = parser.parseFromString(fileContents, "application/xml");
+  buildModel(xmlDoc);
 }
+
+async function fetchFile() {
+  try {
+      let response = await fetch('./models/Untitled/3D/3dmodel.model');
+      if (!response.ok) throw new Error('Network response was not ok');
+      let fileContents = await response.text();
+      loadModel(fileContents);
+  } catch (error) {
+      console.error('There was a problem fetching the file:', error);
+  }
+}
+
+fetchFile();
 
 async function buildModel(xmlDoc) {
   let objects = xmlDoc.getElementsByTagName("object");
@@ -60,7 +76,6 @@ async function buildModel(xmlDoc) {
       let x = parseFloat(vertices[i].getAttribute('x'));
       let y = parseFloat(vertices[i].getAttribute('y'));
       let z = parseFloat(vertices[i].getAttribute('z'));
-      //let [u, v] = [parseFloat(tex_value[i].getAttribute("u")), parseFloat(tex_value[i].getAttribute("v"))]
       let textureInd = j
       let transformedVertex = new Vertex(x, y, z, textureInd);
       console.log(transformedVertex)
