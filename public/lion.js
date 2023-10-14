@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+const lion = `<?xml version="1.0" encoding="utf-8"?>
 <model xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" unit="millimeter" xml:lang="en-US" xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02">
 	<resources>
 		<basematerials id="1">
@@ -9140,3 +9140,4 @@
 		<item objectid="3" transform="0.00244969 0 0 0 0 0.00244969 0 -0.00244969 0 -0.00139357 -0.409227 -0.255995" />
 	</build>
 </model>
+`

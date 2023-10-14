@@ -24,18 +24,16 @@ function loadModel(fileContents) {
   buildModel(xmlDoc);
 }
 
-async function fetchFile() {
-  try {
-      let response = await fetch('./models/Untitled/3D/3dmodel.model');
-      if (!response.ok) throw new Error('Network response was not ok');
-      let fileContents = await response.text();
-      loadModel(fileContents);
-  } catch (error) {
-      console.error('There was a problem fetching the file:', error);
-  }
+// Directly load the model data
+loadModel(lion);
+
+// Load the image data directly from the <img> tag
+async function loadInitialImageData() {
+    const imageUrl = document.getElementById("Lion_img").src;
+    await loadImageData(imageUrl);
 }
 
-fetchFile();
+loadInitialImageData();
 
 async function buildModel(xmlDoc) {
   let objects = xmlDoc.getElementsByTagName("object");
