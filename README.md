@@ -18,7 +18,7 @@
 
 ## 🖼️ Screenshots
 
-![Image 1](path_to_image1.png)
+![Image 1](./public/images/bobcat.png)
 ![Image 2](path_to_image2.png)
 <!-- Add more images as needed -->
 
