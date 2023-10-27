@@ -1,6 +1,6 @@
 # 3DFX.js 🎮
 
-> A simple 3D engine that rasters triangles directly onto your screen in the web.
+> A simple realtime 3D engine that rasters triangles directly onto your screen in the web.
 
 **Demo**: [Try it out here!](https://ridhwan-mohamed.github.io/3DFX.js/)
 
